@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# This file was created by Noam Yorav-Raphael.
+# It is put in the public domain.
+
 import random
 import math
 
