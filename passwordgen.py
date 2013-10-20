@@ -16,20 +16,17 @@ def get_sides(nchars):
     return [x for x in all_sides if 'LLL' not in x and 'RRR' not in x]
 
 def gen_pwd(nchars):
+    """
+    Return password and entropy, as -log2(P(password))
+    """
     rnd = random.SystemRandom()
-    sides = rnd.choice(get_sides(nchars))
-    pwd = ''.join(rnd.choice({'L':LEFT, 'R':RIGHT}[side]) for side in sides)
-    return pwd
-
-def calc_strength(nchars):
-    """Calculate the entropy of passwords generated with nchars chars"""
     all_sides = get_sides(nchars)
-    left_ent = math.log(len(LEFT), 2)
-    right_ent = math.log(len(RIGHT), 2)
-    sides_ent = math.log(len(all_sides), 2)
-    ent = sum(left_ent*sides.count('L') + right_ent*sides.count('R') + sides_ent
-              for sides in all_sides) / len(all_sides)
-    return ent
+    sides = rnd.choice(all_sides)
+    pwd = ''.join(rnd.choice({'L':LEFT, 'R':RIGHT}[side]) for side in sides)
+    ent = (math.log(len(all_sides), 2)
+           + math.log(len(LEFT), 2) * sides.count('L')
+           + math.log(len(RIGHT), 2) * sides.count('R'))
+    return pwd, ent
 
 def main():
     import argparse
@@ -42,12 +39,13 @@ def main():
                         help="Don't print the strength of the password")
     parser.add_argument('nchars', nargs='?', default=8, type=int,
                         help='Number of characters in password '
-                        '(default: 8. This gives you 42 bits of entropy.)')
+                        '(default: 8. This gives you about 42 bits of entropy.)')
     args = parser.parse_args()
 
-    print gen_pwd(args.nchars)
+    pwd, ent = gen_pwd(args.nchars)
+    print pwd
     if not args.silent:
-        print 'Password strength: {:.1f} bits'.format(calc_strength(args.nchars))
+        print 'Password strength: {:.1f} bits'.format(ent)
 
 if __name__ == '__main__':
     main()
